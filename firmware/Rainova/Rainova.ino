@@ -652,6 +652,24 @@ void loop() {
   }
   calcularTendencia();
 
+  // Watchdog del AP: si el WiFi quedo en un estado invalido (o dejo de anunciarse
+  // sin clientes conectados), se vuelve a levantar sin reiniciar el ESP.
+  static unsigned long tUltApWatch = 0, tUltApKeep = 0;
+  if (ahora - tUltApWatch >= 15000) {
+    tUltApWatch = ahora;
+    bool apOk = (WiFi.getMode() == WIFI_AP) && (WiFi.softAPIP()[0] != 0);
+    if (!apOk) {
+      WiFi.mode(WIFI_AP);
+      WiFi.softAPConfig(IPAddress(192, 168, 4, 1), IPAddress(192, 168, 4, 1), IPAddress(255, 255, 255, 0));
+      WiFi.softAP(AP_SSID);
+      Serial.println("[AP] Watchdog: AP reiniciado");
+    } else if (WiFi.softAPgetStationNum() == 0 && ahora - tUltApKeep >= 300000UL) {
+      tUltApKeep = ahora;
+      WiFi.softAP(AP_SSID);   // reanuncio periodico, solo si no hay nadie conectado
+      Serial.println("[AP] Watchdog: AP reanunciado");
+    }
+  }
+
   static unsigned long tUltimoDebug = 0;
   if (ahora - tUltimoDebug >= 15000) {
     tUltimoDebug = ahora;
