@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="theme-color" content="#2C4018">
+<title>Rainova · Monitor de planta</title>
+<!--STYLE-->
+</head>
+<body>
+<div class="phone">
+  <header>
+    <div class="notch"></div>
+    <div class="brand">
+      <div class="leaf">🌿</div>
+      <div><b>Rainova</b><small>Regadera inteligente</small></div>
+    </div>
+    <div class="head-right">
+      <span id="wifiDot" class="dot" title="ESP conectado"></span>
+      <span id="clock">--:--</span>
+    </div>
+  </header>
+
+  <div id="banner" class="banner hidden"></div>
+
+  <main>
+    <!-- INICIO -->
+    <section id="tab-inicio" class="tab active">
+      <div class="card hero">
+        <div class="gauge-wrap">
+          <svg viewBox="0 0 120 120" class="gauge">
+            <circle cx="60" cy="60" r="52" class="g-bg"></circle>
+            <circle cx="60" cy="60" r="52" class="g-val" id="gaugeArc"></circle>
+          </svg>
+          <div class="gauge-label">
+            <div><span id="humedad">--</span><small>%</small></div>
+            <p>Humedad del suelo</p>
+          </div>
+        </div>
+        <div class="trend" id="tendencia">Midiendo…</div>
+      </div>
+
+      <div class="grid2">
+        <div class="card mini" id="cardAgua">
+          <div class="ico">💧</div>
+          <div><small>Agua en tanque</small><b id="aguaTexto">--</b></div>
+        </div>
+        <div class="card mini" id="cardEstado">
+          <div class="ico">⚙️</div>
+          <div><small>Estado</small><b id="estadoTexto">--</b></div>
+        </div>
+      </div>
+
+      <div class="card riego-card">
+        <div class="card-title">¿Ya regó hoy?</div>
+        <div class="riego-main">
+          <div id="yaRego" class="yeah">--</div>
+          <div class="riego-det">
+            <span id="ultimoRiego">Sin registros hoy</span>
+            <span id="mlHoy">0 mL usados hoy</span>
+            <span id="riegosHoy">0 ciclos</span>
+          </div>
+        </div>
+        <div class="divider"></div>
+        <div class="next-row">
+          <span>Próximo riego estimado</span>
+          <b id="proximo">--</b>
+        </div>
+      </div>
+
+      <div class="card ahorro-card">
+        <div class="card-title">Ahorro de agua <small>vs. riego a ojo</small></div>
+        <div class="ahorro-val"><span id="ahorroPct">--</span><small>%</small></div>
+        <div class="bar"><div id="barSistema" class="bar-sis"></div></div>
+        <div class="bar-label"><span>Sistema <b id="mlSistema">-- mL</b></span><span>Riego manual <b id="mlManual">-- mL</b></span></div>
+      </div>
+    </section>
+
+    <!-- HISTÓRICO -->
+    <section id="tab-historico" class="tab">
+      <div class="card">
+        <div class="card-title">Humedad <small>últimos 10 minutos</small></div>
+        <svg id="chart" class="chart" viewBox="0 0 320 150" preserveAspectRatio="none">
+          <line x1="0" y1="60" x2="320" y2="60" class="gl" stroke-dasharray="4 4"></line>
+          <line x1="0" y1="98" x2="320" y2="98" class="gl"></line>
+          <polyline id="chartLine" points="" class="cl"></polyline>
+        </svg>
+        <div class="chart-legend"><span>60% óptimo</span><span>35% seco</span></div>
+      </div>
+      <div class="card">
+        <div class="card-title">Eventos recientes <small>hora del día</small></div>
+        <div id="eventos" class="eventos"><p class="muted">Sin eventos todavía.</p></div>
+      </div>
+      <div class="card">
+        <div class="card-title">Consumo</div>
+        <div class="stats3">
+          <div><small>Hoy</small><b id="statHoy">0 mL</b></div>
+          <div><small>Total</small><b id="statTotal">0 mL</b></div>
+          <div><small>Ciclos hoy</small><b id="statCiclos">0</b></div>
+        </div>
+        <button class="btn ghost" id="btnCsv">Descargar CSV</button>
+      </div>
+    </section>
+
+    <!-- CONTROL -->
+    <section id="tab-control" class="tab">
+      <div class="card">
+        <div class="card-title">Control manual</div>
+        <div class="btn-row">
+          <button class="btn primary" id="btnRegar">💧 Regar ahora</button>
+          <button class="btn" id="btnPausa">⏸ Pausa</button>
+          <button class="btn" id="btnReanudar">▶ Reanudar</button>
+        </div>
+        <p class="msg" id="msgControl"></p>
+        <p class="hint">El riego automático sigue activo aunque el celular se desconecte.</p>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Calibración del sensor <small>🔒 con PIN</small></div>
+        <p class="hint">Lectura cruda actual: <b id="crudo">--</b>. Anota el valor al aire y en agua hasta la línea blanca.</p>
+        <div class="field"><label>Seco (aire)</label><input id="inSeco" type="number" inputmode="numeric"></div>
+        <div class="field"><label>Mojado (agua)</label><input id="inMojado" type="number" inputmode="numeric"></div>
+        <div class="field"><label>mL por segundo</label><input id="inMl" type="number" step="0.1" inputmode="decimal"></div>
+        <div class="field"><label>PIN de acceso (4 dígitos · inicial 1234)</label><input id="inPin" type="password" inputmode="numeric" maxlength="4" placeholder="••••"></div>
+        <div class="field"><label>Nuevo PIN (opcional, 4 dígitos)</label><input id="inNuevoPin" type="password" inputmode="numeric" maxlength="4" placeholder="Sin cambio"></div>
+        <div class="btn-row">
+          <button class="btn primary" id="btnGuardarCal">Guardar calibración</button>
+          <button class="btn ghost" id="btnUsarSeco">Usar lectura actual como seco</button>
+          <button class="btn ghost" id="btnUsarMojado">Usar lectura actual como mojado</button>
+        </div>
+        <p class="msg" id="msgCal"></p>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Sistema</div>
+        <div class="next-row"><span>Red WiFi</span><b>Rainova-ESP</b></div>
+        <div class="next-row"><span>Dirección</span><b>192.168.4.1</b></div>
+        <div class="next-row"><span>Encendido</span><b id="uptime">--</b></div>
+        <button class="btn ghost" id="btnReset">Reiniciar contadores del día</button>
+      </div>
+    </section>
+  </main>
+
+  <nav>
+    <button class="nav-btn active" data-tab="inicio"><span>🏠</span>Inicio</button>
+    <button class="nav-btn" data-tab="historico"><span>📈</span>Histórico</button>
+    <button class="nav-btn" data-tab="control"><span>🎛</span>Control</button>
+  </nav>
+</div>
+<!--SCRIPT-->
+</body>
+</html>
